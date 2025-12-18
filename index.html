@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日信息管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Kalam:wght@400;700&family=Fredoka:wght@400;600&family=Bubblegum+Sans&family=Quicksand:wght@500;700&family=Chewy&family=Luckiest+Guy&family=Permanent+Marker&display=swap');
+
+        body {
+            font-family: 'Comic Neue', 'Kalam', cursive;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffe4e1 0%, #ffc0cb 50%, #ffb6c1 100%);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 背景装饰效果 */
+        .background-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: floatBubble 8s ease-in-out infinite;
+        }
+
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-20px) scale(1.1); opacity: 0.6; }
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 
+                0 25px 50px rgba(255, 182, 193, 0.3),
+                0 15px 30px rgba(255, 192, 203, 0.2),
+                inset 0 4px 8px rgba(255, 255, 255, 0.8);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 182, 193, 0.5);
+        }
+
+        /* 标题样式 */
+        .page-title {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(180deg, #ff69b4 0%, #ff1493 30%, #ff85a2 60%, #ff69b4 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.3);
+            font-family: 'Chewy', 'Luckiest Guy', cursive;
+            letter-spacing: 3px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.2); }
+        }
+
+        /* 表单容器 */
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* 表单组 */
+        .form-group {
+            background: linear-gradient(135deg, rgba(255, 240, 245, 0.8) 0%, rgba(255, 182, 193, 0.2) 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 182, 193, 0.3);
+            box-shadow: 
+                0 10px 25px rgba(255, 182, 193, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 15px 35px rgba(255, 182, 193, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.9);
+        }
+
+        /* 表单标签 */
+        .form-label {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            color: #d63384;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', 'Kalam', cursive;
+        }
+
+        /* 输入框样式 */
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #ffc0cb;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            font-family: 'Comic Neue', 'Kalam', cursive;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff69b4;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 
+                0 0 15px rgba(255, 105, 180, 0.3),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* 文本域样式 */
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #ffc0cb;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: 'Comic Neue', 'Kalam', cursive;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #ff69b4;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 
+                0 0 15px rgba(255, 105, 180, 0.3),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: scale(1.01);
+        }
+
+        /* 文件上传区域 */
+        .file-upload-area {
+            border: 3px dashed #ffb6c1;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255, 240, 245, 0.5) 0%, rgba(255, 182, 193, 0.1) 100%);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="9" fill="%23ff69b4" opacity="0.8"/><circle cx="13" cy="13" r="3" fill="%23fff"/></svg>') 13 13, pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-area:hover {
+            border-color: #ff69b4;
+            background: linear-gradient(135deg, rgba(255, 240, 245, 0.7) 0%, rgba(255, 182, 193, 0.3) 100%);
+            transform: scale(1.02);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #ff1493;
+            background: linear-gradient(135deg, rgba(255, 105, 180, 0.2) 0%, rgba(255, 20, 147, 0.1) 100%);
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+            animation: uploadBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes uploadBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #d63384;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #ff69b4;
+            opacity: 0.8;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* 多图片预览 */
+        .images-preview {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .image-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 25px rgba(255, 182, 193, 0.3),
+                0 5px 15px rgba(255, 192, 203, 0.2);
+            border: 3px solid #fff;
+            background: rgba(255, 240, 245, 0.5);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-image-btn:hover {
+            background: rgba(255, 82, 82, 1);
+            transform: scale(1.1);
+        }
+
+        .upload-limit-hint {
+            text-align: center;
+            margin-top: 10px;
+            color: #ff69b4;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 按钮样式 */
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="9" fill="%23ff69b4" opacity="0.8"/><circle cx="13" cy="13" r="3" fill="%23fff"/></svg>') 13 13, pointer;
+            transition: all 0.3s ease;
+            font-family: 'Comic Neue', 'Kalam', cursive;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 
+                0 10px 25px rgba(255, 182, 193, 0.4),
+                0 5px 15px rgba(255, 192, 203, 0.3),
+                inset 0 3px 6px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffb6d1 0%, #ff85a2 50%, #ffa6c1 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ffc0cb 0%, #ffb6c1 50%, #ffa6c9 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 15px 35px rgba(255, 182, 193, 0.5),
+                0 8px 20px rgba(255, 192, 203, 0.4),
+                inset 0 3px 6px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        /* 信息卡片容器 */
+        .cards-container {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d63384;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Chewy', 'Luckiest Guy', cursive;
+            text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.3);
+        }
+
+        .birthday-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* 生日卡片样式 */
+        .birthday-card {
+            background: linear-gradient(135deg, rgba(255, 240, 245, 0.9) 0%, rgba(255, 182, 193, 0.3) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(255, 182, 193, 0.5);
+            box-shadow: 
+                0 10px 25px rgba(255, 182, 193, 0.2),
+                0 5px 15px rgba(255, 192, 203, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .birthday-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .birthday-card:hover::before {
+            animation: cardShine 0.6s ease-in-out;
+        }
+
+        @keyframes cardShine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+        }
+
+        .birthday-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 15px 35px rgba(255, 182, 193, 0.3),
+                0 8px 20px rgba(255, 192, 203, 0.2);
+        }
+
+        .card-photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 3px solid #fff;
+            box-shadow: 0 5px 15px rgba(255, 182, 193, 0.3);
+        }
+
+        .card-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d63384;
+            margin-bottom: 10px;
+            font-family: 'Chewy', 'Luckiest Guy', cursive;
+        }
+
+        .card-birthday {
+            font-size: 18px;
+            color: #ff69b4;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .card-wish {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 182, 193, 0.3);
+        }
+
+        .card-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .card-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="9" fill="%23ff69b4" opacity="0.8"/><circle cx="13" cy="13" r="3" fill="%23fff"/></svg>') 13 13, pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .card-btn-edit {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .card-btn-delete {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .card-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #ff69b4;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .empty-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .empty-hint {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 
+                0 10px 25px rgba(76, 175, 80, 0.3),
+                0 5px 15px rgba(76, 175, 80, 0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            box-shadow: 
+                0 10px 25px rgba(255, 107, 107, 0.3),
+                0 5px 15px rgba(255, 107, 107, 0.2);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
+
+            .form-group {
+                padding: 20px;
+            }
+
+            .birthday-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="background-decoration" id="background-decoration"></div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <h1 class="page-title">🎂 生日信息管理系统 🎉</h1>
+
+        <!-- 表单容器 -->
+        <div class="form-container">
+            <!-- 左侧：基本信息 -->
+            <div class="form-group">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <span style="font-size: 24px; margin-right: 10px;">👤</span>
+                    <h2 style="color: #d63384; font-family: 'Comic Neue', 'Kalam', cursive;">基本信息</h2>
+                </div>
+
+                <div class="form-group" style="background: none; padding: 0; border: none; box-shadow: none; margin-bottom: 20px;">
+                    <label class="form-label">姓名</label>
+                    <input type="text" id="name" class="form-input" placeholder="请输入姓名" required>
+                </div>
+
+                <div class="form-group" style="background: none; padding: 0; border: none; box-shadow: none; margin-bottom: 20px;">
+                    <label class="form-label">生日</label>
+                    <input type="date" id="birthday" class="form-input" required>
+                </div>
+
+                <div class="form-group" style="background: none; padding: 0; border: none; box-shadow: none;">
+                    <label class="form-label">生日祝福</label>
+                    <textarea id="wish" class="form-textarea" placeholder="写下您的生日祝福..." required></textarea>
+                </div>
+            </div>
+
+            <!-- 右侧：照片上传 -->
+            <div class="form-group">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <span style="font-size: 24px; margin-right: 10px;">📸</span>
+                    <h2 style="color: #d63384; font-family: 'Comic Neue', 'Kalam', cursive;">照片上传（最多9张）</h2>
+                </div>
+
+                <div class="file-upload-area" id="file-upload-area">
+                    <span class="upload-icon">📁</span>
+                    <div class="upload-text">点击或拖拽照片到此处</div>
+                    <div class="upload-hint">支持 JPG、PNG、GIF 格式，最大 5MB，最多可上传9张照片</div>
+                    <input type="file" id="file-input" accept="image/*">
+                </div>
+
+                <div class="images-preview" id="images-preview">
+                    <!-- 图片预览将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 按钮组 -->
+        <div class="button-group">
+            <button class="btn btn-primary" id="save-btn">
+                <span>💾 保存信息</span>
+            </button>
+            <button class="btn btn-secondary" id="clear-btn">
+                <span>🔄 重置表单</span>
+            </button>
+
+            <button class="btn btn-secondary" id="view-card-btn" style="background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);">
+                <span>🎂 查看贺卡</span>
+            </button>
+
+
+
+
+        </div>
+
+
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 全局变量 =====
+        let birthdayData = [];
+        let currentImagesData = [];
+        let editingId = null;
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeBackground();
+            initializeFileUpload();
+            initializeButtons();
+        });
+
+
+
+        // ===== 背景装饰初始化 =====
+        function initializeBackground() {
+            const decoration = document.getElementById('background-decoration');
+            const bubbleCount = 15;
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'floating-bubble';
+                bubble.style.width = Math.random() * 80 + 20 + 'px';
+                bubble.style.height = bubble.style.width;
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.top = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                decoration.appendChild(bubble);
+            }
+        }
+
+        // ===== 文件上传初始化 =====
+        function initializeFileUpload() {
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file-input');
+
+            // 点击上传区域
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // 文件选择
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 拖拽上传
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    // 只处理第一张图片，其余的忽略
+                    handleSingleFile(files[0]);
+                }
+            });
+        }
+
+        // ===== 处理文件选择 =====
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                // 只处理第一张图片，其余的忽略
+                handleSingleFile(files[0]);
+                // 清空input，以便再次选择同一文件
+                e.target.value = '';
+            }
+        }
+
+
+
+        // ===== 处理单文件上传 =====
+        function handleSingleFile(file) {
+            const maxImages = 9;
+            
+            if (currentImagesData.length >= maxImages) {
+                showToast('已达到最大图片数量限制（9张）！', 'error');
+                return;
+            }
+
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                showToast(`文件 ${file.name} 不是有效的图片格式！`, 'error');
+                return;
+            }
+
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(`文件 ${file.name} 大小超过5MB！`, 'error');
+                return;
+            }
+
+            // 读取文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImagesData.push({
+                    id: Date.now().toString() + Math.random(),
+                    src: e.target.result,
+                    name: file.name
+                });
+                
+                renderImagesPreview();
+                updateUploadLimitHint();
+                showToast('图片上传成功！');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== 渲染图片预览 =====
+        function renderImagesPreview() {
+            const previewContainer = document.getElementById('images-preview');
+            previewContainer.innerHTML = '';
+
+            currentImagesData.forEach(image => {
+                const imageItem = document.createElement('div');
+                imageItem.className = 'image-item';
+                imageItem.innerHTML = `
+                    <img src="${image.src}" alt="${image.name}">
+                    <button class="remove-image-btn" onclick="removeImage('${image.id}')">×</button>
+                `;
+                previewContainer.appendChild(imageItem);
+            });
+
+            // 始终显示上传区域，除非达到最大数量
+            if (currentImagesData.length >= 9) {
+                document.getElementById('file-upload-area').style.display = 'none';
+            } else {
+                document.getElementById('file-upload-area').style.display = 'block';
+            }
+        }
+
+        // ===== 移除单张图片 =====
+        function removeImage(imageId) {
+            currentImagesData = currentImagesData.filter(img => img.id !== imageId);
+            renderImagesPreview();
+            updateUploadLimitHint();
+            showToast('图片已移除');
+        }
+
+        // ===== 更新上传限制提示 =====
+        function updateUploadLimitHint() {
+            const maxImages = 9;
+            const currentCount = currentImagesData.length;
+            const remaining = maxImages - currentCount;
+            
+            let hintElement = document.querySelector('.upload-limit-hint');
+            if (!hintElement) {
+                hintElement = document.createElement('div');
+                hintElement.className = 'upload-limit-hint';
+                document.getElementById('file-upload-area').appendChild(hintElement);
+            }
+            
+            if (currentCount >= maxImages) {
+                hintElement.textContent = `已达到最大图片数量限制（${maxImages}张）`;
+            } else {
+                hintElement.textContent = `已上传 ${currentCount} 张，还可上传 ${remaining} 张`;
+            }
+        }
+
+        // ===== 按钮初始化 =====
+        function initializeButtons() {
+            // 保存按钮
+            document.getElementById('save-btn').addEventListener('click', saveBirthdayData);
+            
+            // 重置按钮
+            document.getElementById('clear-btn').addEventListener('click', clearForm);
+            
+
+            
+            // 查看贺卡按钮
+            document.getElementById('view-card-btn').addEventListener('click', () => {
+                // 如果有保存的姓名，使用保存的姓名
+                const savedName = localStorage.getItem('birthdayPersonName');
+                if (savedName) {
+                    window.location.href = `图片/方形礼盒.html?name=${encodeURIComponent(savedName)}`;
+                } else {
+                    // 否则直接跳转到礼盒页面
+                    window.location.href = '图片/方形礼盒.html';
+                }
+            });
+            
+
+            
+
+        }
+
+        // ===== 保存生日数据 =====
+        function saveBirthdayData() {
+            const name = document.getElementById('name').value.trim();
+            const birthday = document.getElementById('birthday').value;
+            const wish = document.getElementById('wish').value.trim();
+
+            // 验证必填字段
+            if (!name) {
+                showToast('请输入姓名！', 'error');
+                return;
+            }
+
+            if (!birthday) {
+                showToast('请选择生日！', 'error');
+                return;
+            }
+
+            if (!wish) {
+                showToast('请输入生日祝福！', 'error');
+                return;
+            }
+
+            // 创建数据对象
+            const data = {
+                id: editingId || Date.now().toString(),
+                name: name,
+                birthday: birthday,
+                wish: wish,
+                photos: currentImagesData.length > 0 ? currentImagesData : [{ id: 'default', src: getDefaultAvatar(), name: 'default.jpg' }],
+                createdAt: editingId ? getExistingData(editingId).createdAt : new Date().toISOString()
+            };
+
+            // 保存数据
+            if (editingId) {
+                // 更新现有数据
+                const index = birthdayData.findIndex(item => item.id === editingId);
+                if (index !== -1) {
+                    birthdayData[index] = data;
+                    showToast('生日信息更新成功！');
+                }
+                editingId = null;
+            } else {
+                // 添加新数据
+                birthdayData.push(data);
+                showToast('生日信息保存成功！');
+            }
+
+            // 保存姓名到localStorage，供礼盒页面使用
+            localStorage.setItem('birthdayPersonName', name);
+            
+            // 保存生日祝福到localStorage，供礼盒页面使用
+            localStorage.setItem('birthdayPersonWish', wish);
+            
+            // 保存上传的照片到localStorage，供礼盒页面使用
+            localStorage.setItem('birthdayPersonPhotos', JSON.stringify(currentImagesData));
+
+
+            
+
+            
+            // 询问是否跳转到礼盒页面
+            setTimeout(() => {
+                if (confirm(`已保存${name}的生日信息和${currentImagesData.length}张照片！是否现在打开生日贺卡？`)) {
+                    // 跳转到礼盒页面，并通过URL传递姓名
+                    window.location.href = `图片/方形礼盒.html?name=${encodeURIComponent(name)}`;
+                }
+            }, 1000);
+            
+            // 延迟清空表单，确保跳转前数据已保存
+            setTimeout(() => {
+                clearForm();
+            }, 100);
+        }
+
+        // ===== 获取默认头像 =====
+        function getDefaultAvatar() {
+            // 创建一个简单的默认头像
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            // 绘制渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, 200, 200);
+            gradient.addColorStop(0, '#ffc0cb');
+            gradient.addColorStop(1, '#ff69b4');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // 绘制文字
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🎂', 100, 100);
+            
+            return canvas.toDataURL();
+        }
+
+        // ===== 获取现有数据 =====
+        function getExistingData(id) {
+            return birthdayData.find(item => item.id === id);
+        }
+
+        // ===== 清空表单 =====
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('birthday').value = '';
+            document.getElementById('wish').value = '';
+            currentImagesData = [];
+            renderImagesPreview();
+            document.getElementById('file-input').value = '';
+            editingId = null;
+            
+            // 注意：不要清除localStorage中的姓名，供跳转使用
+            
+            // 更新按钮文本
+            document.querySelector('#save-btn span').textContent = '💾 保存信息';
+        }
+
+
+
+        // ===== 打开生日贺卡 =====
+        function openBirthdayCard(name) {
+            // 从已保存的数据中找到对应的祝福
+            const savedData = localStorage.getItem('birthdayData');
+            if (savedData) {
+                try {
+                    const birthdayData = JSON.parse(savedData);
+                    const personData = birthdayData.find(item => item.name === name);
+                    if (personData && personData.wish) {
+                        // 保存对应的祝福到localStorage
+                        localStorage.setItem('birthdayPersonWish', personData.wish);
+                    }
+                } catch (e) {
+                    console.log('获取生日祝福失败:', e);
+                }
+            }
+            
+            // 保存姓名到localStorage
+            localStorage.setItem('birthdayPersonName', name);
+            
+            // 跳转到礼盒页面，并通过URL传递姓名
+            window.location.href = `图片/方形礼盒.html?name=${encodeURIComponent(name)}`;
+        }
+
+        // ===== 显示提示消息 =====
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'error') {
+                toast.classList.add('error');
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
